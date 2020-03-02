@@ -1,0 +1,61 @@
+---
+- hosts: all
+  remote_user: vagrant
+  become_user: root
+  become_method: sudo
+  become: true
+
+  tasks:
+  - import_tasks: base-tasks-k8s.yml
+
+  - name: Initialize the Kubernetes cluster using kubeadm
+    command: kubeadm init --apiserver-advertise-address="192.168.50.10" --apiserver-cert-extra-sans="192.168.50.10"  --node-name k8s-master --pod-network-cidr=192.168.10.0/24
+
+  - name: Create kubeconfig local directory
+    file:
+      path: /home/vagrant/.kube
+      state: directory
+      mode: '0755'
+
+  - name: Copy system-wide kubeconfig to local user vagrant
+    copy:
+      src: /etc/kubernetes/admin.conf
+      dest: /home/vagrant/.kube/config
+      remote_src: true
+
+  - name: Change ownership of local kubeconfig
+    file:
+      path: /home/vagrant/.kube/config
+      owner: vagrant
+      group: vagrant
+
+  - name: Copy all required YAML files
+    copy: src={{ item.src }} dest={{ item.dest }}
+    with_items:
+      - { src: 'kube-flannel.yml', dest: '/home/vagrant/kube-flannel.yml' }
+      - { src: 'kube-dash-recommended.yml', dest: '/home/vagrant/kube-dash-recommended.yml' }
+      - { src: 'kube-dash-admin.yml', dest: '/home/vagrant/kube-dash-admin.yml' }
+
+  - name: Install flannel pod network
+    become: false
+    command: kubectl create -f /home/vagrant/kube-flannel.yml
+
+  - name: Install the Kubernetes Dashboard v1.10.2 (recommended setup)
+    become: false
+    command: kubectl create -f /home/vagrant/kube-dash-recommended.yml
+
+  - name: Setup admin user to the dashboard
+    become: false
+    command: kubectl create -f /home/vagrant/kube-dash-admin.yml
+
+  - name: Generate join command
+    command: kubeadm token create --print-join-command
+    register: join_command
+
+  - name: Copy join command to local file
+    local_action: copy content="{{ join_command.stdout_lines[0] }}" dest="./join-command"
+    become: false
+
+  handlers:
+  - import_tasks: base-handlers-k8s.yml
+

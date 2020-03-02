@@ -20,12 +20,13 @@ Vagrant.configure("2") do |cfg|
 		end
 		master.vm.box = IMAGE_NAME
 		master.vm.hostname = "k8s-master"
-		master.vm.network "private_network", ip: "192.168.50.10"
-		master.vm.network "public_network", bridge: "zt0", auto_config: false
+		#master.vm.network "private_network", ip: "192.168.50.10"
+		master.vm.network "public_network", bridge: "zt0", ip: "172.25.200.10"
 		master.vm.provision("ansible") do |ans|
 			ans.playbook = "master-playbook.yml"
 			ans.compatibility_mode = "2.0"
 			ans.extra_vars = {
+				#node_ip: "192.168.50.10",
 				node_ip: "192.168.50.10",
 			}
 		end
@@ -39,13 +40,14 @@ Vagrant.configure("2") do |cfg|
 			end
 			node.vm.box = IMAGE_NAME
 			node.vm.hostname = "k8s-node-#{i}"
-			node.vm.network "private_network", ip: "192.168.50.#{i + 10}"
-			node.vm.network "public_network", bridge: "zt0", auto_config: false
+			#node.vm.network "private_network", ip: "192.168.50.#{i + 10}"
+			node.vm.network "public_network", bridge: "zt0", ip: "172.25.200.#{i + 10}"
 			node.vm.provision("ansible") do |ans|
 				ans.playbook = "node-playbook.yml"
 				ans.compatibility_mode = "2.0"
 				ans.extra_vars = {
-					node_ip: "192.168.50.#{i + 10}",
+					#node_ip: "192.168.50.#{i + 10}",
+					node_ip: "172.25.200.#{i + 10}",
 				}
 			end
 		end

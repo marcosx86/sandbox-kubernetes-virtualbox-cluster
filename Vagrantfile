@@ -27,7 +27,7 @@ Vagrant.configure("2") do |cfg|
 			ans.compatibility_mode = "2.0"
 			ans.extra_vars = {
 				#node_ip: "192.168.50.10",
-				node_ip: "192.168.50.10",
+				node_ip: "172.25.200.10",
 			}
 		end
 	end

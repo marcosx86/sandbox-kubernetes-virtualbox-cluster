@@ -6,7 +6,7 @@
   become: true
 
   tasks:
-  - import_tasks: base-tasks-k8s.yml
+  - import_tasks: base-tasks-k8s.yaml
 
   - name: Initialize the Kubernetes cluster using kubeadm
     command: kubeadm init --apiserver-advertise-address="172.25.200.10" --apiserver-cert-extra-sans="172.25.200.10"  --node-name k8s-master --pod-network-cidr=10.0.0.0/8
@@ -32,21 +32,31 @@
   - name: Copy all required YAML files
     copy: src={{ item.src }} dest={{ item.dest }}
     with_items:
-      - { src: 'kube-flannel.yml', dest: '/home/vagrant/kube-flannel.yml' }
-      - { src: 'kube-dash-recommended.yml', dest: '/home/vagrant/kube-dash-recommended.yml' }
-      - { src: 'kube-dash-admin.yml', dest: '/home/vagrant/kube-dash-admin.yml' }
+      - { src: 'kube-flannel.yaml', dest: '/home/vagrant/kube-flannel.yaml' }
+      - { src: 'metallb.yaml', dest: '/home/vagrant/metallb.yaml' }
+      - { src: 'metallb-config.yaml', dest: '/home/vagrant/metallb-config.yaml' }
+      - { src: 'kube-dash-recommended.yaml', dest: '/home/vagrant/kube-dash-recommended.yaml' }
+      - { src: 'kube-dash-admin.yaml', dest: '/home/vagrant/kube-dash-admin.yaml' }
 
   - name: Install flannel pod network
     become: false
-    command: kubectl create -f /home/vagrant/kube-flannel.yml
+    command: kubectl create -f /home/vagrant/kube-flannel.yaml
+
+  - name: Install MetalLB load balancer
+    become: false
+    command: kubectl create -f /home/vagrant/metallb.yaml
+
+  - name: Setup MetalLB IP pools
+    become: false
+    command: kubectl create -f /home/vagrant/metallb-config.yaml
 
   - name: Install the Kubernetes Dashboard v1.10.2 (recommended setup)
     become: false
-    command: kubectl create -f /home/vagrant/kube-dash-recommended.yml
+    command: kubectl create -f /home/vagrant/kube-dash-recommended.yaml
 
   - name: Setup admin user to the dashboard
     become: false
-    command: kubectl create -f /home/vagrant/kube-dash-admin.yml
+    command: kubectl create -f /home/vagrant/kube-dash-admin.yaml
 
   - name: Generate join command
     command: kubeadm token create --print-join-command
@@ -57,5 +67,5 @@
     become: false
 
   handlers:
-  - import_tasks: base-handlers-k8s.yml
+  - import_tasks: base-handlers-k8s.yaml
 

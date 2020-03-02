@@ -23,7 +23,7 @@ Vagrant.configure("2") do |cfg|
 		#master.vm.network "private_network", ip: "192.168.50.10"
 		master.vm.network "public_network", bridge: "zt0", ip: "172.25.200.10"
 		master.vm.provision("ansible") do |ans|
-			ans.playbook = "master-playbook.yml"
+			ans.playbook = "master-playbook.yaml"
 			ans.compatibility_mode = "2.0"
 			ans.extra_vars = {
 				#node_ip: "192.168.50.10",
@@ -43,7 +43,7 @@ Vagrant.configure("2") do |cfg|
 			#node.vm.network "private_network", ip: "192.168.50.#{i + 10}"
 			node.vm.network "public_network", bridge: "zt0", ip: "172.25.200.#{i + 10}"
 			node.vm.provision("ansible") do |ans|
-				ans.playbook = "node-playbook.yml"
+				ans.playbook = "node-playbook.yaml"
 				ans.compatibility_mode = "2.0"
 				ans.extra_vars = {
 					#node_ip: "192.168.50.#{i + 10}",

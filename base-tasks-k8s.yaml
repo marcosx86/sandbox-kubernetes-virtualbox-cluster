@@ -87,12 +87,6 @@
       - kubeadm 
       - kubectl
 
-        #  - name: Configure node ip
-        #    ignore_errors: true
-        #    lineinfile:
-        #      path: /etc/default/kubelet
-        #      line: KUBELET_EXTRA_ARGS=--node-ip={{ node_ip }}
-
 - name: Restart kubelet
   service:
     name: kubelet

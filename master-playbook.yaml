@@ -10,7 +10,8 @@
 
   - name: Initialize the Kubernetes cluster using kubeadm
     #command: kubeadm init --apiserver-advertise-address="192.168.50.10" --apiserver-cert-extra-sans="192.168.50.10"  --node-name k8s-master --pod-network-cidr=10.244.0.0/16
-    command: kubeadm init --apiserver-advertise-address="172.25.200.10" --apiserver-cert-extra-sans="172.25.200.10"  --node-name k8s-master --pod-network-cidr=10.244.0.0/16
+    #command: kubeadm init --apiserver-advertise-address="172.25.200.10" --apiserver-cert-extra-sans="172.25.200.10"  --node-name k8s-master --pod-network-cidr=10.244.0.0/16
+    command: kubeadm init --apiserver-advertise-address="192.168.0.200" --apiserver-cert-extra-sans="192.168.0.200"  --node-name k8s-master --pod-network-cidr=10.244.0.0/16
 
   - name: Create kubeconfig local directory
     file:
@@ -35,7 +36,7 @@
     with_items:
       - { src: 'kube-flannel.yaml', dest: '/home/vagrant/kube-flannel.yaml' }
       - { src: 'metallb.yaml', dest: '/home/vagrant/metallb.yaml' }
-      - { src: 'metallb-zerotier.yaml', dest: '/home/vagrant/metallb-zerotier.yaml' }
+      - { src: 'metallb-localnet.yaml', dest: '/home/vagrant/metallb-localnet.yaml' }
       - { src: 'traefik-definitions.yaml', dest: '/home/vagrant/traefik-definitions.yaml' }
       - { src: 'traefik-deployment.yaml', dest: '/home/vagrant/traefik-deployment.yaml' }
       - { src: 'kube-dash-recommended.yaml', dest: '/home/vagrant/kube-dash-recommended.yaml' }
@@ -51,7 +52,7 @@
 
   - name: Setup MetalLB IP pools
     become: false
-    command: kubectl create -f /home/vagrant/metallb-zerotier.yaml
+    command: kubectl create -f /home/vagrant/metallb-localnet.yaml
 
   - name: Install and setup basic Traefik (definitions)
     become: false

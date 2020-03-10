@@ -9,15 +9,14 @@
   - import_tasks: base-tasks-k8s.yaml
 
   - name: Initialize the Kubernetes cluster using kubeadm
-    #command: kubeadm init --apiserver-advertise-address="192.168.50.10" --apiserver-cert-extra-sans="192.168.50.10"  --node-name k8s-master --pod-network-cidr=10.244.0.0/16
-    #command: kubeadm init --apiserver-advertise-address="172.25.200.10" --apiserver-cert-extra-sans="172.25.200.10"  --node-name k8s-master --pod-network-cidr=10.244.0.0/16
-    command: kubeadm init --apiserver-advertise-address="192.168.0.200" --apiserver-cert-extra-sans="192.168.0.200"  --node-name k8s-master --pod-network-cidr=10.244.0.0/16
+    command: kubeadm init --pod-network-cidr=172.48.0.0/16 --token-ttl=12h
 
   - name: Create kubeconfig local directory
     file:
       path: /home/vagrant/.kube
       state: directory
       mode: '0755'
+    become: false
 
   - name: Copy system-wide kubeconfig to local user vagrant
     copy:
@@ -34,45 +33,37 @@
   - name: Copy all required YAML files
     copy: src={{ item.src }} dest={{ item.dest }}
     with_items:
-      - { src: 'kube-flannel.yaml', dest: '/home/vagrant/kube-flannel.yaml' }
+      - { src: 'network-calico.yaml', dest: '/home/vagrant/network-calico.yaml' }
       - { src: 'metallb.yaml', dest: '/home/vagrant/metallb.yaml' }
       - { src: 'metallb-localnet.yaml', dest: '/home/vagrant/metallb-localnet.yaml' }
-      - { src: 'traefik-definitions.yaml', dest: '/home/vagrant/traefik-definitions.yaml' }
+      - { src: 'traefik-namespace.yaml', dest: '/home/vagrant/traefik-namespace.yaml' }
+      - { src: 'traefik-definition.yaml', dest: '/home/vagrant/traefik-definition.yaml' }
+      - { src: 'traefik-rbac.yaml', dest: '/home/vagrant/traefik-rbac.yaml' }
       - { src: 'traefik-deployment.yaml', dest: '/home/vagrant/traefik-deployment.yaml' }
-      - { src: 'kube-dash-recommended.yaml', dest: '/home/vagrant/kube-dash-recommended.yaml' }
-      - { src: 'kube-dash-admin.yaml', dest: '/home/vagrant/kube-dash-admin.yaml' }
-
-  - name: Install flannel pod network
+      - { src: 'traefik-ingress-dashboard.yaml', dest: '/home/vagrant/traefik-ingress-dashboard.yaml' }
+      - { src: 'kubernetes-dashboard-v2rc5.yaml', dest: '/home/vagrant/kubernetes-dashboard-v2rc5.yaml' }
+      - { src: 'kubernetes-dashboard-admin.yaml', dest: '/home/vagrant/kubernetes-dashboard-admin.yaml' }
     become: false
-    command: kubectl create -f /home/vagrant/kube-flannel.yaml
 
-  - name: Install MetalLB load balancer
+  - name: Install Calico, MetalLB, Traefik and the k8s Dashbooard
+    command: kubectl create -f /home/vagrant/{{ item }}
+    with_items:
+    - network-calico.yaml
+    - metallb.yaml
+    - metallb-localnet.yaml
+    - traefik-namespace.yaml
+    - traefik-definition.yaml
+    - traefik-rbac.yaml
+    - traefik-deployment.yaml
+    - traefik-ingress-dashboard.yaml
+    - kubernetes-dashboard-v2rc5.yaml
+    - kubernetes-dashboard-admin.yaml
     become: false
-    command: kubectl create -f /home/vagrant/metallb.yaml
-
-  - name: Setup MetalLB IP pools
-    become: false
-    command: kubectl create -f /home/vagrant/metallb-localnet.yaml
-
-  - name: Install and setup basic Traefik (definitions)
-    become: false
-    command: kubectl create -f /home/vagrant/traefik-definitions.yaml
-
-  - name: Install and setup basic Traefik (deployment and ingress)
-    become: false
-    command: kubectl create -f /home/vagrant/traefik-deployment.yaml
-
-  - name: Install the Kubernetes Dashboard v1.10.2 (recommended setup)
-    become: false
-    command: kubectl create -f /home/vagrant/kube-dash-recommended.yaml
-
-  - name: Setup admin user to the dashboard
-    become: false
-    command: kubectl create -f /home/vagrant/kube-dash-admin.yaml
 
   - name: Generate join command
     command: kubeadm token create --print-join-command
     register: join_command
+    become: false
 
   - name: Copy join command to local file
     local_action: copy content="{{ join_command.stdout_lines[0] }}" dest="./join-command"

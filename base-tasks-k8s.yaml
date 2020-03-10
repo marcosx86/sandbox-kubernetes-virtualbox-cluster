@@ -46,6 +46,9 @@
 - name: Set up docker daemon cgroup driver to systemd
   copy: src=docker-daemon.json dest=/etc/docker/daemon.json
 
+- name: Create systemd's Docker service directory
+  file: path=/etc/systemd/system/docker.service.d state=directory recurse=yes
+
 - name: Restart docker service
   service:
     name: docker.service
@@ -86,6 +89,25 @@
       - kubelet 
       - kubeadm 
       - kubectl
+
+- name: IPtables, ARPtables, EBtables
+  apt: 
+    name: "{{ packages }}"
+    state: present
+    update_cache: yes
+  vars:
+    packages:
+      - iptables
+      - arptables
+      - ebtables
+
+- name: Set legacy IPtables as default
+  command: update-alternatives --set {{ item }} /usr/sbin/{{ item }}-legacy
+  with_items:
+  - iptables
+  - ip6tables
+  - arptables
+  - ebtables
 
 - name: Restart kubelet
   service:

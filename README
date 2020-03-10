@@ -1,0 +1,32 @@
+Roteiro:
+
+- Criação da VM base
+- Instalação do Debian 10 (Buster)
+- Instalação dos pacotes básicos
+- Instalação do Docker, Kubernetes e pre-setup
+* Instalar os certificados e repositório Docker, e seus pacotes
+
+- Inicialização do cluster
+- Configuração do nó principal
+* CNI Calico
+* MetalLB e configuração
+* Traefik
+- Criação de deployment de exemplo (Nginx) e rota de entrada do Traefik
+
+- Kubernetes Dashboard
+* Instalação
+* Acesso usuário
+* Acesso via NodePort
+* Acesso via rota Traefik
+* Direcionando alocação para o nó mestre
+
+https://docs.docker.com/install/linux/docker-ce/debian/
+https://kubernetes.io/docs/setup/production-environment/tools/kubeadm/create-cluster-kubeadm/
+https://docs.projectcalico.org/getting-started/kubernetes/quickstart
+https://metallb.universe.tf/installation/
+https://github.com/containous/traefik
+https://github.com/Thoorium/kubernetes-local-cluster-flannel-metallb-traefik/tree/master/traefik
+https://kubernetes.io/docs/tasks/access-application-cluster/web-ui-dashboard/
+https://github.com/kubernetes/dashboard/blob/v2.0.0-rc5/aio/deploy/recommended.yaml
+https://github.com/kubernetes/dashboard/blob/master/docs/user/access-control/creating-sample-user.md
+
